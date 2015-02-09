@@ -18,15 +18,30 @@ function evaluate(question_no, answer)
     # do whatever and decide the answer
     # display a result (correct / not)
     # display a button that allows user to submit the answer
-    b = button("Submit answer to question " * string(question_no))
-    lift(_ -> submit(question_no, answer), init=nothing)
+    info = Input("<div class='alert alert-info'>Evaluating the answer...</div>")
+    @async begin
+        # The HTTP requests to evaluate answer goes here...
+        # After the request, you can push the
+        result = "<div class='alert alert-success'>Success!</div>"
+        push!(info, result)
+    end
+
+    b = button("Submit last evaluated answer to question " * string(question_no))
+    lift(_ -> submit(info, question_no, answer), b, init=nothing)
+
+    display(lift(html, info))
     display(b)
     # return the answer itself for consistency
     answer
 end
 
-function submit(question_no, answer)
+function submit(info, question_no, answer)
     # TODO: confirm this as the answer
+    @async begin
+        push!(info, "<div class='alert alert-info'>Submitting answer...</div>")
+        result = "<div class='alert alert-success'>Answer submitted! 10 points!!</div>"
+        push!(info, result)
+    end
 end
 
 end # module
