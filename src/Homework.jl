@@ -5,15 +5,22 @@ using Interact, Reactive
 display(MIME"text/html"(),
     """<script>$(readall(Pkg.dir("Homework", "src", "homework.js")))</script>""")
 
+macro js_str(expr)
+    :(display(MIME"text/html"(), "<script>$(esc(expr))</script>"))
+end
+
 function setup_user(key)
     # TODO: Automatically do this on JuliaBox?
     # OR EdX should allow users to generate unique keys
+
+    js"Homework.user = key"
 end
 
 function setup_problem_set(key)
+    js"Homework.problemset = key"
 end
 
-function evaluate(question_no, answer)
+function evaluate(pset, question_no, user, answer)
     # TODO: warn if user id / problem set is invalid,
     # do whatever and decide the answer
     # display a result (correct / not)
@@ -27,7 +34,7 @@ function evaluate(question_no, answer)
     end
 
     b = button("Submit last evaluated answer to question " * string(question_no))
-    lift(_ -> submit(info, question_no, answer), b, init=nothing)
+    lift(_ -> submit(pset, question_no, user, answer), b, init=nothing)
 
     display(lift(html, info))
     display(b)
@@ -35,7 +42,7 @@ function evaluate(question_no, answer)
     answer
 end
 
-function submit(info, question_no, answer)
+function submit(pset, question_no, user, answer, info)
     # TODO: confirm this as the answer
     @async begin
         push!(info, "<div class='alert alert-info'>Submitting answer...</div>")

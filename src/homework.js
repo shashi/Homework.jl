@@ -6,7 +6,11 @@
             if (this.metadata && typeof(this.metadata.question) !== "undefined") {
                 // TODO: Include problem set number, user id
                 return "using Homework \n" +
-                "Homework.evaluate(" + this.metadata.question + ", " + get_text.call(this) + ")"
+                "Homework.evaluate(" [ Homework.problem_set,
+                                       this.metadata.question,
+                                       Homework.user,
+                                       get_text.call(this)
+                                    ].join(", ") + ")"
             } else {
                 return get_text.call(this)
             }
@@ -38,6 +42,12 @@
         }
 
         window.Homework = {
+            user: "",
+            problem_set: ""
+        }
+
+        function set_juliabox_user_id() {
+
         }
     }
 })(jQuery)
