@@ -12,6 +12,17 @@
             }
         }
 
+        var cell_to_json = IPython.CodeCell.prototype.toJSON
+        IPython.CodeCell.prototype.toJSON = function () {
+            if (this.metadata && typeof(this.metadata.question) !== "undefined") {
+                data = cell_to_json.call(this)
+                data.input = get_text.call(this)
+                return data
+            } else {
+                return cell_to_json.call(this)
+            }
+        }
+
         var delete_cell = IPython.Notebook.prototype.delete_cell
         IPython.Notebook.prototype.delete_cell = function (index) {
             console.log(index)
