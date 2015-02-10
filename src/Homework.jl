@@ -29,7 +29,7 @@ function evaluate(pset, question_no, user, answer)
     @async begin
         # The HTTP requests to evaluate answer goes here...
         # After the request, you can push the
-        result = "<div class='alert alert-success'>Success!</div>"
+        result = "<div class='alert alert-success'>Success! </div>"
         push!(info, result)
     end
 
