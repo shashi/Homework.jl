@@ -5,10 +5,10 @@
         IPython.CodeCell.prototype.get_text = function () {
             if (this.metadata && typeof(this.metadata.question) !== "undefined") {
                 // TODO: Include problem set number, user id
-                return "Homework.evaluate(" + [ '"' + Homework.problem_set +'"',
-                                         '"' + this.metadata.question + '"',
-                                         '"' + Homework.user + '"',
-                                         "(" + get_text.call(this) +")"
+                return 'Homework.evaluate(' + [ '"' + JSON.stringify(Homework.config) + '"',
+                                         this.metadata.question,
+                                         JSON.stringify(document.cookie),
+                                         "begin " + get_text.call(this) +" end"
                                        ].join(", ") + ")"
             } else {
                 return get_text.call(this)
@@ -40,18 +40,7 @@
         }
 
         window.Homework = {
-            user: "",
-            problem_set: ""
+            config: {}
         }
-
-        function set_juliabox_user_id() {
-            var sessname = /sessname=([^;]+);/.exec(document.cookie);
-            if (sessname) {
-                window.Homework.user = sessname[1]
-            }
-        }
-
-        // try to set the juliabox sessname as the user id.
-        set_juliabox_user_id()
     }
 })(jQuery)
