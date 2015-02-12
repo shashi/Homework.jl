@@ -28,7 +28,6 @@ function evaluate(config_json, question_no, cookie, answer)
     if !haskey(config, "host")
         config["host"] = "http://ec2-54-204-24-92.compute-1.amazonaws.com"
     end
-    println(config)
 
     @assert haskey(config, "course")
     @assert haskey(config, "problem_set")
