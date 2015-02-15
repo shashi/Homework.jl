@@ -2,6 +2,7 @@ module Homework
 
 using Interact, Reactive
 using JSON, Requests
+using Requires
 
 display(MIME"text/html"(),
     """<script>$(readall(Pkg.dir("Homework", "src", "homework.js")))</script>""")
@@ -12,6 +13,16 @@ end
 
 function configure(key)
     script(string("Homework.config = ", JSON.json(key)))
+end
+
+jsonable(x) = x
+jsonable(x::Dict) = [jsonable(k) => jsonable(v) for (k, v) in x]
+jsonable(x::AbstractArray) = map(jsonable, x)
+jsonable(x::Tuple) = map(jsonable, x)
+
+
+@require SymPy begin
+    Homework.jsonable(x::SymPy.Sym) = "sym-" * string(x)
 end
 
 alert(level, text) =
@@ -42,7 +53,7 @@ function evaluate(config_json, question_no, cookie, answer)
                      "course" => config["course"],
                      "problemset" => config["problem_set"],
                      "question" => question_no,
-                     "answer" => JSON.json(answer)],
+                     "answer" => JSON.json(jsonable(answer))],
             headers = ["Cookie" => cookie])
 
     show_btn = false
@@ -84,7 +95,7 @@ function submit(config, question_no, cookie, answer, info)
                      "course" => config["course"],
                      "problemset" => config["problem_set"],
                      "question" => question_no,
-                     "answer" => JSON.json(answer)],
+                     "answer" => JSON.json(jsonable(answer))],
             headers = ["Cookie" => cookie])
 
         if res.status == 200
