@@ -75,6 +75,20 @@
         }
     }
 
+    function make_message(metadata) {
+        var msg = "<div class='hw-msg' style='color: #888; background: #efefef; font-size: 0.8em; padding: 0.5em 0.5em 0.5em 0.5em'>" +
+                  "<span class='icon-info-sign'></span> Code your answer here, run it, and then make an attempt. <span style='float: right'>"
+        if (metadata.score) {
+           msg += " Max score: <b>" + metadata.score + "</b>"
+        }
+        if (metadata.attempts == 0) {
+           msg += " &middot; Attempts allowed: <b>infinite!</b>"
+        } else if (typeof(metadata.attempts) == "number") {
+           msg += " &middot; Attempts allowed: <b>" + metadata.attempts + "</b>"
+        }
+        return msg + "</span></div>"
+    }
+
     function show_messages() {
         var i = 0
         var cell = IPython.notebook.get_cell(i)
@@ -83,7 +97,7 @@
                 var el = cell.element
                 var q = cell.metadata.question
                 $(el).find(".hw-msg").remove()
-                $(el).find(".input_area").append("<small class='hw-msg' style='color: #888; padding-left: 0.5em; padding-bottom: 1em'>Code your answer in this cell.</small>")
+                $(el).find(".input_area").append(make_message(cell.metadata))
             }
             cell = IPython.notebook.get_cell(i)
             i+=1

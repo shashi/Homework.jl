@@ -46,10 +46,9 @@ function attempt_prompt(config_json, metadata_json, cookie, answer)
     metadata = JSON.parse(metadata_json)
 
     info = Input(get(metadata, "info", "<div></div>"))
-    metadata_channel = Input(("", ""))
+    metadata_channel = Input{(Any, Any)}(("", ""))
 
     question = metadata["question"]
-
     lift(metadata_channel, init=script("")) do x
         k, v = x
         set_metadata(question, k, v)
@@ -73,7 +72,6 @@ end
 #
 
 function evaluate(config, metadata, cookie, answer, info, meta)
-
     @assert haskey(config, "course")
     @assert haskey(config, "problem_set")
     @assert haskey(metadata, "question")
@@ -81,7 +79,6 @@ function evaluate(config, metadata, cookie, answer, info, meta)
     if !haskey(config, "host")
         config["host"] = "https://juliabox.org"
     end
-
     question_no = metadata["question"]
 
     @async begin
@@ -118,30 +115,40 @@ function evaluate(config, metadata, cookie, answer, info, meta)
     answer
 end
 
+function msg_with_score(msg, data)
+    score = data["score"]
+    attempts = data["attempts"]
+    max_attempts = data["max_attempts"]
+    max_score = data["max_score"]
+
+    max_att = max_attempts == 0 ? "unlimited" : string(max_attempts)
+    msg * " <span class='label label-primary' style='float: right'>Score: $score / $max_score. Attempts: $attempts / $max_att.</span>"
+end
+
 function report_evaluation(info, result, meta)
 
-    status = result["status"]
-    score = result["score"]
-    attempts = result["attempts"]
-    max_attempts = result["max_attempts"]
-    max_score = result["max_attempts"]
+    data = result["data"]
+    status = data["status"]
+    score = data["score"]
+    attempts = data["attempts"]
+    max_attempts = data["max_attempts"]
+    max_score = data["max_score"]
 
     if status == 1
-        msg = "<span class='icon-thumps-up'></span> <b>Correct!</b> Score: $score/$max_score. Attempts: $attempt/$max_attempts."
+        msg = "<span class='icon-thumbs-up'></span> Your last attempt was <b>correct!"
         push!(info,
-            alert("success", msg))
+            alert("success", msg_with_score(msg, data)))
         push!(meta, ("finished", true))
     else
-        if attempt >= max_attempts
-            msg = "<span class='icon-thumps-down'></span> You have <b>exceeded the maximum number of attempts</b> allowed for this question. <br>"
+        if max_attempts != 0 && attempts >= max_attempts
+            msg = "<span class='icon-thumbs-down'></span> You <b>exceeded the maximum number of attempts</b> allowed for this question. <br>"
             push!(meta, ("finished", true))
         else
-            msg = "<span class='icon-fire'></span> <b>Wrong answer. Sorry.</b>"
+            msg = "<span class='icon-eraser'></span> Wrong answer. <b>Try again.</b>"
         end
-        msg +=  " Score: $score/$max_score. Attempts: $attempt/$max_attempts."
 
         push!(info,
-            alert("warning", msg))
+            alert("warning", msg_with_score(msg, data)))
     end
 
 end
