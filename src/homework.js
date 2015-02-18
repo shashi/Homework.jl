@@ -6,7 +6,7 @@
             if (this.metadata && typeof(this.metadata.question) !== "undefined") {
                 // TODO: Include problem set number, user id
                 return 'Homework.evaluate(' + [ JSON.stringify(JSON.stringify(Homework.config)),
-                                         JSON.stringify(this.metadata.question),
+                                         JSON.stringify(this.metadata),
                                          JSON.stringify(document.cookie),
                                          "begin " + get_text.call(this) +" end"
                                        ].join(", ") + ")"

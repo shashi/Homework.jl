@@ -4,6 +4,8 @@ using Interact, Reactive
 using JSON, HTTPClient
 using Requires
 
+include("encode.jl")
+
 display(MIME"text/html"(),
     """<script>$(readall(Pkg.dir("Homework", "src", "homework.js")))</script>""")
 
@@ -15,15 +17,6 @@ function configure(key)
     script(string("Homework.config = ", JSON.json(key)))
 end
 
-jsonable(x) = x
-jsonable(x::Dict) = [jsonable(k) => jsonable(v) for (k, v) in x]
-jsonable(x::AbstractArray) = map(jsonable, x)
-jsonable(x::Tuple) = map(jsonable, x)
-
-@require SymPy begin
-    Homework.jsonable(x::SymPy.Sym) = "sym-" * string(x)
-end
-
 alert(level, text) =
     "<div class='alert alert-$level'>$text</div>"
 
@@ -31,11 +24,12 @@ teeprint(x) = begin println(x); x end # A useful debugging function
 
 get_response_data(x) = x.body |> takebuf_string |> JSON.parse
 
-function evaluate(config_json, question_no, cookie, answer)
+function evaluate(config_json, metadata, cookie, answer)
     # TODO: warn if user id / problem set is invalid,
     # do whatever and decide the answer
     # display a result (correct / not)
     # display a button that allows user to submit the answer
+
     config = JSON.parse(config_json)
     if !haskey(config, "host")
         config["host"] = "https://juliabox.org"
@@ -43,8 +37,11 @@ function evaluate(config_json, question_no, cookie, answer)
 
     @assert haskey(config, "course")
     @assert haskey(config, "problem_set")
+    @assert haskey(metadata, "question")
 
-    info = Input("<div class='alert alert-info'>Evaluating the answer...</div>")
+    question_no = metadata["question"]
+
+    info = Input("<div class='alert alert-info'>Evaluating your answer...</div>")
 
     # The HTTP requests to evaluate answer goes here...
     # After the request, you can push the
@@ -56,7 +53,7 @@ function evaluate(config_json, question_no, cookie, answer)
                 ("course", config["course"]),
                 ("problemset", config["problem_set"]),
                 ("question", question_no),
-                ("answer", JSON.json(jsonable(answer)))],
+                ("answer", JSON.json(encode(metadata, answer)))],
             headers = [("Cookie", cookie)])
 
     show_btn = false
@@ -67,7 +64,7 @@ function evaluate(config_json, question_no, cookie, answer)
         else
             if result["data"] == 1
                 @async push!(info, alert("success", "That is the correct answer!"))
-                submit(config, question_no, cookie, answer, info)
+                submit(config, metadata, cookie, answer, info)
             else
                 @async push!(info, alert("warning", "That answer is wrong! You may try again."))
                 show_btn = true
@@ -88,19 +85,21 @@ function evaluate(config_json, question_no, cookie, answer)
     answer
 end
 
-function submit(config, question_no, cookie, answer, info)
+function submit(config, metadata, cookie, answer, info)
     # TODO: confirm this as the answer
     @async begin
         # The HTTP requests to evaluate answer goes here...
         # After the request, you can push the
-    res = get(string(strip(config["host"], ['/']), "/hw/");
+
+        question_no = metadata["question"]
+        res = get(string(strip(config["host"], ['/']), "/hw/");
             blocking = true,
             query_params = [
                 ("mode", "submit"),
                 ("course", config["course"]),
                 ("problemset", config["problem_set"]),
                 ("question", question_no),
-                ("answer", JSON.json(jsonable(answer)))],
+                ("answer", JSON.json(encode(metadata, answer)))],
             headers = [("Cookie", cookie)])
 
         if res.http_code == 200
