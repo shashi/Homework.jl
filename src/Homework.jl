@@ -20,7 +20,6 @@ jsonable(x::Dict) = [jsonable(k) => jsonable(v) for (k, v) in x]
 jsonable(x::AbstractArray) = map(jsonable, x)
 jsonable(x::Tuple) = map(jsonable, x)
 
-
 @require SymPy begin
     Homework.jsonable(x::SymPy.Sym) = "sym-" * string(x)
 end
@@ -39,7 +38,7 @@ function evaluate(config_json, question_no, cookie, answer)
     # display a button that allows user to submit the answer
     config = JSON.parse(config_json)
     if !haskey(config, "host")
-        config["host"] = "http://ec2-54-204-24-92.compute-1.amazonaws.com"
+        config["host"] = "https://juliabox.org"
     end
 
     @assert haskey(config, "course")
@@ -81,7 +80,7 @@ function evaluate(config_json, question_no, cookie, answer)
     b = button("Submit answer anyway...")
     lift(_ -> submit(config, question_no, cookie, answer, info), b, init=nothing)
 
-    display(lift(html, info))
+    display(lift(msg -> display(MIME"text/html"(), msg), info))
     if show_btn
         display(b)
     end
