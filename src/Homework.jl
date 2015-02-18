@@ -6,29 +6,31 @@ using Requires
 
 include("encode.jl")
 
+# Load javascript into IJulia
 display(MIME"text/html"(),
     """<script>$(readall(Pkg.dir("Homework", "src", "homework.js")))</script>""")
 
-function script(expr)
+script(expr) =
     display(MIME"text/html"(), string("<script>", expr, "</script>"))
-end
 
-function configure(key)
+configure(key) =
     script(string("Homework.config = ", JSON.json(key)))
-end
 
 alert(level, text) =
     "<div class='alert alert-$level'>$text</div>"
 
-teeprint(x) = begin println(x); x end # A useful debugging function
+teeprint(x) =
+    begin println(x); x end # A useful debugging function
 
-get_response_data(x) = x.body |> takebuf_string |> JSON.parse
+get_response_data(x) =
+    x.body |> takebuf_string |> JSON.parse
+
+
+#
+# Evaluate an answer.
+#
 
 function evaluate(config_json, metadata, cookie, answer)
-    # TODO: warn if user id / problem set is invalid,
-    # do whatever and decide the answer
-    # display a result (correct / not)
-    # display a button that allows user to submit the answer
 
     config = JSON.parse(config_json)
     if !haskey(config, "host")
@@ -41,7 +43,7 @@ function evaluate(config_json, metadata, cookie, answer)
 
     question_no = metadata["question"]
 
-    info = Input("<div class='alert alert-info'>Evaluating your answer...</div>")
+    info = Input(alert("info", "Evaluating your answer..."))
 
     # The HTTP requests to evaluate answer goes here...
     # After the request, you can push the
