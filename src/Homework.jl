@@ -4,8 +4,6 @@ using Interact, Reactive
 using JSON, HTTPClient
 using Requires
 
-include("encode.jl")
-
 # Load javascript into IJulia
 display(MIME"text/html"(),
     """<script>$(readall(Pkg.dir("Homework", "src", "homework.js")))</script>""")
@@ -24,6 +22,56 @@ teeprint(x) =
 
 get_response_data(x) =
     x.body |> takebuf_string |> JSON.parse
+
+type Html
+    html::String
+end
+
+import Base.writemime
+Base.writemime(io::IO, ::MIME"text/html", x::Html) = x.html
+
+include("encode.jl")
+
+
+#
+# Save answer in a closure for the submit button event,
+# make the button and display it. return the answer as is.
+#
+function attempt_prompt(config_json, metadata, cookie, answer)
+    b = button("Attempt")
+
+    lift(b, init=nothing) do
+        evaluate(config, question_no, cookie, answer, info)
+    end |> display
+
+    answer
+end
+
+function report_evaluation(info, result)
+
+    status = result["status"]
+    score = result["score"]
+    attempts = result["attempts"]
+    max_attempts = result["max_attempts"]
+    max_score = result["max_attempts"]
+
+    if status == 1
+        msg = "<span class='icon-thumps-up'></span> <b>Correct!</b> Score: $score/$max_score. Attempts: $attempt/$max_attempts."
+        push!(info,
+            alert("success", msg))
+    else
+        if attempt >= max_attempts
+            msg = "<span class='icon-thumps-down'></span> You have <b>exceeded the maximum number of attempts</b> allowed for this question. <br>"
+        else
+            msg = "<span class='icon-fire'></span> <b>Wrong answer. Sorry.</b> "
+        end
+        msg +=  " Score: $score/$max_score. Attempts: $attempt/$max_attempts."
+
+        push!(info,
+            alert("warning", msg))
+    end
+
+end
 
 
 #
@@ -47,78 +95,36 @@ function evaluate(config_json, metadata, cookie, answer)
 
     # The HTTP requests to evaluate answer goes here...
     # After the request, you can push the
-    @async push!(info, alert("info", "Verifying your answer..."))
-    res = get(string(strip(config["host"], ['/']), "/hw/");
-            blocking = true,
-            query_params = [
-                ("mode", "check"),
-                ("course", config["course"]),
-                ("problemset", config["problem_set"]),
-                ("question", question_no),
-                ("answer", JSON.json(encode(metadata, answer)))],
-            headers = [("Cookie", cookie)])
-
-    show_btn = false
-    if res.http_code == 200
-        result = get_response_data(res)
-        if result["code"] != 0
-            @async push!(info, alert("danger", "Something went wrong while verifying your code!"))
-        else
-            if result["data"] == 1
-                @async push!(info, alert("success", "That is the correct answer!"))
-                submit(config, metadata, cookie, answer, info)
-            else
-                @async push!(info, alert("warning", "That answer is wrong! You may try again."))
-                show_btn = true
-            end
-        end
-    else
-        @async push!(info, alert("danger", "There was an unexpected error while accessing the homework server."))
-    end
-
-    b = button("Submit answer anyway...")
-    lift(_ -> submit(config, question_no, cookie, answer, info), b, init=nothing)
-
-    display(lift(msg -> display(MIME"text/html"(), msg), info))
-    if show_btn
-        display(b)
-    end
-    # return the answer itself for consistency
-    answer
-end
-
-function submit(config, metadata, cookie, answer, info)
-    # TODO: confirm this as the answer
     @async begin
-        # The HTTP requests to evaluate answer goes here...
-        # After the request, you can push the
-
-        question_no = metadata["question"]
         res = get(string(strip(config["host"], ['/']), "/hw/");
-            blocking = true,
-            query_params = [
-                ("mode", "submit"),
-                ("course", config["course"]),
-                ("problemset", config["problem_set"]),
-                ("question", question_no),
-                ("answer", JSON.json(encode(metadata, answer)))],
-            headers = [("Cookie", cookie)])
+                blocking = true,
+                query_params = [
+                    ("mode", "submit"),
+                    ("params", JSON.json([
+                        "course" => config["course"],
+                        "problemset" => config["problem_set"],
+                        "question" => question_no,
+                        "answer" => JSON.json(encode(metadata, answer))]))],
+                headers = [("Cookie", cookie)])
 
         if res.http_code == 200
             result = get_response_data(res)
             if result["code"] != 0
-                push!(info, alert("danger", "Something went wrong while submitting your answer!"))
+                @async push!(info, alert("danger",
+                    "Something went wrong while verifying your code!"))
             else
-                if result["data"] == 1
-                    push!(info, alert("success", "Success! Your answer is correct and has been recorded!"))
-                else
-                    push!(info, alert("warning", "Your answer has been recorded, however it seems to be wrong. You may try again!"))
-                end
+                report_evaluation(info, result)
             end
         else
-            push!(info, alert("danger", "There was an unexpected error while accessing the homework server."))
+            @async push!(info, alert("danger",
+                "There was an unexpected error while accessing the homework server."))
         end
     end
+
+    display(lift(msg -> Html(msg), info))
+
+    # return the answer itself for consistency
+    answer
 end
 
 end # module
