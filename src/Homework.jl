@@ -8,11 +8,18 @@ using Requires
 display(MIME"text/html"(),
     """<script>$(readall(Pkg.dir("Homework", "src", "homework.js")))</script>""")
 
+type Html
+    html::String
+end
+
+import Base.writemime
+Base.writemime(io::IO, ::MIME"text/html", x::Html) = write(io, x.html)
+
 script(expr) =
-    display(MIME"text/html"(), string("<script>", expr, "</script>"))
+    Html(string("<script>", expr, "</script>"))
 
 configure(key) =
-    script(string("Homework.config = ", JSON.json(key)))
+    display(script(string("Homework.config = ", JSON.json(key))))
 
 alert(level, text) =
     "<div class='alert alert-$level'>$text</div>"
@@ -23,14 +30,11 @@ teeprint(x) =
 get_response_data(x) =
     x.body |> takebuf_string |> JSON.parse
 
-type Html
-    html::String
-end
-
-import Base.writemime
-Base.writemime(io::IO, ::MIME"text/html", x::Html) = write(io, x.html)
-
 include("encode.jl")
+
+function set_metadata(question, key, value)
+    script("Homework.set_meta(" * JSON.json(question) * ", " * JSON.json(key) * ", " * JSON.json(value) * ")")
+end
 
 #
 # Save answer in a closure for the submit button event,
@@ -41,30 +45,34 @@ function attempt_prompt(config_json, metadata_json, cookie, answer)
     config = JSON.parse(config_json)
     metadata = JSON.parse(metadata_json)
 
-    if haskey(metadata, "score")
-        label = "Attempt ($(metadata["score"]) pts)"
-    else
-        label = "Attempt"
-    end
+    info = Input(get(metadata, "info", "<div></div>"))
+    metadata_channel = Input(("", ""))
 
-    b = button(label)
-    info = Input("<div></div>")
+    question = metadata["question"]
 
-    lift(b, init=nothing) do _
-        evaluate(config, metadata, cookie, answer, info)
-    end
+    lift(metadata_channel, init=script("")) do x
+        k, v = x
+        set_metadata(question, k, v)
+    end |> display
 
+    display(lift(msg -> set_metadata(metadata["question"], "info", msg), info, init=script("")))
     display(lift(Html, info))
-    display(b)
+    if !get(metadata, "finished", false)
+        b = button("Attempt.")
+        display(b)
+
+        lift(b, init=nothing) do _
+            evaluate(config, metadata, cookie, answer, info, metadata_channel)
+        end
+    end
     answer
 end
-
 
 #
 # Evaluate an answer.
 #
 
-function evaluate(config, metadata, cookie, answer, info)
+function evaluate(config, metadata, cookie, answer, info, meta)
 
     @assert haskey(config, "course")
     @assert haskey(config, "problem_set")
@@ -98,7 +106,7 @@ function evaluate(config, metadata, cookie, answer, info)
                 push!(info, alert("danger",
                     "Something went wrong while verifying your code!"))
             else
-                report_evaluation(info, result)
+                report_evaluation(info, result, meta)
             end
         else
             push!(info, alert("danger",
@@ -110,7 +118,7 @@ function evaluate(config, metadata, cookie, answer, info)
     answer
 end
 
-function report_evaluation(info, result)
+function report_evaluation(info, result, meta)
 
     status = result["status"]
     score = result["score"]
@@ -122,11 +130,13 @@ function report_evaluation(info, result)
         msg = "<span class='icon-thumps-up'></span> <b>Correct!</b> Score: $score/$max_score. Attempts: $attempt/$max_attempts."
         push!(info,
             alert("success", msg))
+        push!(meta, ("finished", true))
     else
         if attempt >= max_attempts
             msg = "<span class='icon-thumps-down'></span> You have <b>exceeded the maximum number of attempts</b> allowed for this question. <br>"
+            push!(meta, ("finished", true))
         else
-            msg = "<span class='icon-fire'></span> <b>Wrong answer. Sorry.</b> "
+            msg = "<span class='icon-fire'></span> <b>Wrong answer. Sorry.</b>"
         end
         msg +=  " Score: $score/$max_score. Attempts: $attempt/$max_attempts."
 

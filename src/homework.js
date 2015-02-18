@@ -52,8 +52,47 @@
             }
         }
 
+        function get_question(q) {
+            var i = 0
+            var cell = IPython.notebook.get_cell(i)
+            while(cell !== null) {
+                if (cell.metadata && cell.metadata.question === q) {
+                    return cell
+                }
+                cell = IPython.notebook.get_cell(i)
+                i+=1
+            }
+            return null
+        }
+
+        function set_meta(question, key, value) {
+            get_question(question).metadata[key] = value
+        }
+
         window.Homework = {
-            config: {}
+            config: {},
+            set_meta: set_meta
         }
     }
+
+    function show_messages() {
+        var i = 0
+        var cell = IPython.notebook.get_cell(i)
+        while(cell !== null) {
+            if (cell.metadata && typeof(cell.metadata.question) !== "undefined") {
+                var el = cell.element
+                var q = cell.metadata.question
+                $(el).find(".hw-msg").remove()
+                $(el).find(".input_area").append("<small class='hw-msg' style='color: #888; padding-left: 0.5em; padding-bottom: 1em'>Code your answer in this cell.</small>")
+            }
+            cell = IPython.notebook.get_cell(i)
+            i+=1
+        }
+    }
+
+    var timer = setTimeout(show_messages, 3000)
+
+    $([IPython.events]).on('notebook_loaded.Notebook', show_messages)
+    $([IPython.events]).on('create.Cell', show_messages) 
+
 })(jQuery)
