@@ -28,22 +28,85 @@ type Html
 end
 
 import Base.writemime
-Base.writemime(io::IO, ::MIME"text/html", x::Html) = x.html
+Base.writemime(io::IO, ::MIME"text/html", x::Html) = write(io, x.html)
 
 include("encode.jl")
-
 
 #
 # Save answer in a closure for the submit button event,
 # make the button and display it. return the answer as is.
 #
-function attempt_prompt(config_json, metadata, cookie, answer)
-    b = button("Attempt")
+function attempt_prompt(config_json, metadata_json, cookie, answer)
 
-    lift(b, init=nothing) do
-        evaluate(config, question_no, cookie, answer, info)
-    end |> display
+    config = JSON.parse(config_json)
+    metadata = JSON.parse(metadata_json)
 
+    if haskey(metadata, "score")
+        label = "Attempt ($(metadata["score"]) pts)"
+    else
+        label = "Attempt"
+    end
+
+    b = button(label)
+    info = Input("<div></div>")
+
+    lift(b, init=nothing) do _
+        evaluate(config, metadata, cookie, answer, info)
+    end
+
+    display(lift(Html, info))
+    display(b)
+    answer
+end
+
+
+#
+# Evaluate an answer.
+#
+
+function evaluate(config, metadata, cookie, answer, info)
+
+    @assert haskey(config, "course")
+    @assert haskey(config, "problem_set")
+    @assert haskey(metadata, "question")
+
+    if !haskey(config, "host")
+        config["host"] = "https://juliabox.org"
+    end
+
+    question_no = metadata["question"]
+
+    @async begin
+        push!(info, alert("info", "Evaluating your answer..."))
+
+        # The HTTP requests to evaluate answer goes here...
+        # After the request, you can push the
+        res = get(string(strip(config["host"], ['/']), "/hw/");
+                blocking = true,
+                query_params = [
+                    ("mode", "submit"),
+                    ("params", JSON.json([
+                        "course" => config["course"],
+                        "problemset" => config["problem_set"],
+                        "question" => question_no,
+                        "answer" => JSON.json(encode(metadata, answer))]))],
+                headers = [("Cookie", cookie)])
+
+        if res.http_code == 200
+            result = get_response_data(res)
+            if result["code"] != 0
+                push!(info, alert("danger",
+                    "Something went wrong while verifying your code!"))
+            else
+                report_evaluation(info, result)
+            end
+        else
+            push!(info, alert("danger",
+                "There was an unexpected error while accessing the homework server."))
+        end
+    end
+
+    # return the answer itself for consistency
     answer
 end
 
@@ -73,58 +136,5 @@ function report_evaluation(info, result)
 
 end
 
-
-#
-# Evaluate an answer.
-#
-
-function evaluate(config_json, metadata, cookie, answer)
-
-    config = JSON.parse(config_json)
-    if !haskey(config, "host")
-        config["host"] = "https://juliabox.org"
-    end
-
-    @assert haskey(config, "course")
-    @assert haskey(config, "problem_set")
-    @assert haskey(metadata, "question")
-
-    question_no = metadata["question"]
-
-    info = Input(alert("info", "Evaluating your answer..."))
-
-    # The HTTP requests to evaluate answer goes here...
-    # After the request, you can push the
-    @async begin
-        res = get(string(strip(config["host"], ['/']), "/hw/");
-                blocking = true,
-                query_params = [
-                    ("mode", "submit"),
-                    ("params", JSON.json([
-                        "course" => config["course"],
-                        "problemset" => config["problem_set"],
-                        "question" => question_no,
-                        "answer" => JSON.json(encode(metadata, answer))]))],
-                headers = [("Cookie", cookie)])
-
-        if res.http_code == 200
-            result = get_response_data(res)
-            if result["code"] != 0
-                @async push!(info, alert("danger",
-                    "Something went wrong while verifying your code!"))
-            else
-                report_evaluation(info, result)
-            end
-        else
-            @async push!(info, alert("danger",
-                "There was an unexpected error while accessing the homework server."))
-        end
-    end
-
-    display(lift(msg -> Html(msg), info))
-
-    # return the answer itself for consistency
-    answer
-end
 
 end # module
