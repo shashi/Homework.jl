@@ -65,46 +65,63 @@
             return null
         }
 
-        function set_meta(question, key, value) {
-            get_question(question).metadata[key] = value
+        function mount_message(cell) {
+            var meta = cell.metadata,
+                msg = meta.msg || "<span class='icon-terminal'></span> &nbsp; Code your answer here, run it, and then make an attempt. <span style='float: right'>",
+                score = meta.score || 0,
+                max_score = meta.max_score || 0,
+                attempts = meta.attempts || 0,
+                max_attempts = meta.max_attempts
+
+            msg += "<span style='float: right' class='label label-info'> Score: <b>" + score + " / " + max_score + "</b>"
+            if (max_attempts != 0) {
+                msg += " &middot; Attempts: <b>" + attempts + " / " + max_attempts + "</b>"
+            }
+            msg += "</span>"
+
+            var level = meta.alert || "info"
+
+            msg = "<div class='hw-msg alert alert-" + level + "' id='hw-msg-" + meta.question +
+                   "' style='padding: 0.5em; margin: 0; border-radius: 0'>" +
+                   msg + "</div>"
+
+            $(cell.element).find(".hw-msg").remove()
+            $(cell.element).find(".input_area").eq(0).append(msg)
+        }
+
+        function set_meta(question, extension) {
+            console.log("set meta", question, extension)
+            var cell = get_question(question)
+            for (var key in extension) {
+                if (extension.hasOwnProperty(key)) {
+                    cell.metadata[key] = extension[key]
+                }
+            }
+            mount_message(cell)
         }
 
         window.Homework = {
             config: {},
-            set_meta: set_meta
+            set_meta: set_meta,
+            mount_message: mount_message
         }
     }
 
-    function make_message(metadata) {
-        var msg = "<div class='hw-msg' style='color: #888; background: #efefef; font-size: 0.8em; padding: 0.5em 0.5em 0.5em 0.5em'>" +
-                  "<span class='icon-info-sign'></span> Code your answer here, run it, and then make an attempt. <span style='float: right'>"
-        if (metadata.score) {
-           msg += " Max score: <b>" + metadata.score + "</b>"
-        }
-        if (metadata.attempts == 0) {
-           msg += " &middot; Attempts allowed: <b>infinite!</b>"
-        } else if (typeof(metadata.attempts) == "number") {
-           msg += " &middot; Attempts allowed: <b>" + metadata.attempts + "</b>"
-        }
-        return msg + "</span></div>"
-    }
 
     function show_messages() {
         var i = 0
         var cell = IPython.notebook.get_cell(i)
         while(cell !== null) {
             if (cell.metadata && typeof(cell.metadata.question) !== "undefined") {
-                var el = cell.element
                 var q = cell.metadata.question
-                $(el).find(".hw-msg").remove()
-                $(el).find(".input_area").append(make_message(cell.metadata))
+                mount_message(cell)
             }
             cell = IPython.notebook.get_cell(i)
             i+=1
         }
     }
 
-    var timer = setTimeout(show_messages, 3000)
+    var timer = setTimeout(show_messages, 500)
 
     $([IPython.events]).on('notebook_loaded.Notebook', show_messages)
     $([IPython.events]).on('create.Cell', show_messages) 

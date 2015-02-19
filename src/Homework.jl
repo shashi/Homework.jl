@@ -22,7 +22,7 @@ configure(key) =
     display(script(string("Homework.config = ", JSON.json(key))))
 
 alert(level, text) =
-    "<div class='alert alert-$level'>$text</div>"
+    ["alert" => level, "msg" => text]
 
 teeprint(x) =
     begin println(x); x end # A useful debugging function
@@ -32,8 +32,8 @@ get_response_data(x) =
 
 include("encode.jl")
 
-function set_metadata(question, key, value)
-    script("Homework.set_meta(" * JSON.json(question) * ", " * JSON.json(key) * ", " * JSON.json(value) * ")")
+function set_metadata(question, obj)
+    script("Homework.set_meta(" * JSON.json(question) * ", " * JSON.json(obj) * ")")
 end
 
 #
@@ -45,19 +45,15 @@ function attempt_prompt(config_json, metadata_json, cookie, answer)
     config = JSON.parse(config_json)
     metadata = JSON.parse(metadata_json)
 
-    info = Input(get(metadata, "info", "<div></div>"))
-    metadata_channel = Input{(Any, Any)}(("", ""))
+    metadata_channel = Input{Any}(Dict())
 
     question = metadata["question"]
     lift(metadata_channel, init=script("")) do x
-        k, v = x
-        set_metadata(question, k, v)
+        set_metadata(question, x)
     end |> display
 
-    display(lift(msg -> set_metadata(metadata["question"], "info", msg), info, init=script("")))
-    display(lift(Html, info))
     if !get(metadata, "finished", false)
-        b = button("Attempt.")
+        b = button("Attempt »")
         display(b)
 
         lift(b, init=nothing) do _
@@ -71,7 +67,7 @@ end
 # Evaluate an answer.
 #
 
-function evaluate(config, metadata, cookie, answer, info, meta)
+function evaluate(config, metadata, cookie, answer, meta)
     @assert haskey(config, "course")
     @assert haskey(config, "problem_set")
     @assert haskey(metadata, "question")
@@ -82,7 +78,7 @@ function evaluate(config, metadata, cookie, answer, info, meta)
     question_no = metadata["question"]
 
     @async begin
-        push!(info, alert("info", "Evaluating your answer..."))
+        push!(meta, alert("info", "Evaluating your answer..."))
 
         # The HTTP requests to evaluate answer goes here...
         # After the request, you can push the
@@ -97,16 +93,16 @@ function evaluate(config, metadata, cookie, answer, info, meta)
                         "answer" => JSON.json(encode(metadata, answer))]))],
                 headers = [("Cookie", cookie)])
 
+
         if res.http_code == 200
             result = get_response_data(res)
             if result["code"] != 0
-                push!(info, alert("danger",
-                    "Something went wrong while verifying your code!"))
+                push!(meta, alert("danger", "Something went wrong while verifying your code!"))
             else
-                report_evaluation(info, result, meta)
+                report_evaluation(result, meta)
             end
         else
-            push!(info, alert("danger",
+            push!(meta, alert("danger",
                 "There was an unexpected error while accessing the homework server."))
         end
     end
@@ -115,17 +111,7 @@ function evaluate(config, metadata, cookie, answer, info, meta)
     answer
 end
 
-function msg_with_score(msg, data)
-    score = data["score"]
-    attempts = data["attempts"]
-    max_attempts = data["max_attempts"]
-    max_score = data["max_score"]
-
-    max_att = max_attempts == 0 ? "unlimited" : string(max_attempts)
-    msg * " <span class='label label-primary' style='float: right'>Score: $score / $max_score. Attempts: $attempts / $max_att.</span>"
-end
-
-function report_evaluation(info, result, meta)
+function report_evaluation(result, meta)
 
     data = result["data"]
     status = data["status"]
@@ -136,21 +122,22 @@ function report_evaluation(info, result, meta)
 
     if status == 1
         msg = "<span class='icon-thumbs-up'></span> Your last attempt was <b>correct!"
-        push!(info,
-            alert("success", msg_with_score(msg, data)))
-        push!(meta, ("finished", true))
+        merge!(data,
+            alert("success", msg))
+        data["finished"] = true
     else
         if max_attempts != 0 && attempts >= max_attempts
             msg = "<span class='icon-thumbs-down'></span> You <b>exceeded the maximum number of attempts</b> allowed for this question. <br>"
-            push!(meta, ("finished", true))
+            data["finished"] = true
         else
             msg = "<span class='icon-eraser'></span> Wrong answer. <b>Try again.</b>"
         end
 
-        push!(info,
-            alert("warning", msg_with_score(msg, data)))
+        merge!(data,
+            alert("warning", msg,))
     end
 
+    push!(meta, data)
 end
 
 
