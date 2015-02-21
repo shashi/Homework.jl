@@ -65,6 +65,7 @@
         }
 
         function mount_message(cell) {
+            if (!cell) { return }
             var meta = cell.metadata,
                 msg = meta.msg || "<span class='icon-terminal'></span> &nbsp; Code your answer here. <span style='float: right'>",
                 score = meta.score || 0,
@@ -221,8 +222,6 @@
         function refresh_messages(q) {
             _.map(q ? [get_question(q)] : get_question_cells(), mount_message)
         }
-
-        var timer = setTimeout(refresh_messages, 500)
 
         $([IPython.events]).on('notebook_loaded.Notebook', refresh_messages)
         $([IPython.events]).on('create.Cell', refresh_messages)
