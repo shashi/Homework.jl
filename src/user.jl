@@ -37,7 +37,7 @@ function evaluate(config, metadata, cookie, answer, meta)
     if !haskey(config, "host")
         config["host"] = "https://juliabox.org"
     end
-    question_no = metadata["question"]
+    question_no = string(metadata["question"])
 
     @async begin
         push!(meta, alert("info", "Evaluating your answer..."))
