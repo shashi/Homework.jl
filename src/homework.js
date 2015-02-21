@@ -131,8 +131,8 @@
                 s = function(result){
                     if(result.code == 0) {
                         bootbox.dialog({
-                            message: self._json_to_table(result.data),
-                            title: 'Create Course'
+                            message: "The problem set was created. Now run <code>Homework.clear_answers()</code> to get the notebook ready for distribution.",
+                            title: 'Problemset created'
                         }).find("div.modal-dialog").addClass("bootbox70");
                     }
                     else {
@@ -157,8 +157,10 @@
                 data: {
                     'mode': 'create',
                     'params': JSON.stringify(course)
-                }
-            }, s, f)
+                },
+                success: s,
+                failure: f
+            })
         }
 
         function create_problemset(config) {
