@@ -5,7 +5,8 @@
         IPython.CodeCell.prototype.get_text = function () {
             if (this.metadata && typeof(this.metadata.question) !== "undefined") {
                 // TODO: Include problem set number, user id
-                return 'Homework.attempt_prompt(' + [ JSON.stringify(JSON.stringify(Homework.config)),
+                var fn = (Homework.mode === "create") ? "new_question" : "attempt_prompt";
+                return 'Homework.' + fn + '(' + [ JSON.stringify(JSON.stringify(Homework.config)),
                                          JSON.stringify(JSON.stringify(this.metadata)),
                                          JSON.stringify(document.cookie),
                                          "begin " + get_text.call(this) +" end"
@@ -31,10 +32,8 @@
             data = rename_keys(data, key_map)
 
             if (data.metadata && data.metadata.reactive) {
-                console.log(data)
                 var cls = ".signal-" + data.metadata.comm_id
                 data.html = $(cls).eq(0).html()
-                console.log(data.html)
             }
             return data
         }
@@ -67,15 +66,27 @@
 
         function mount_message(cell) {
             var meta = cell.metadata,
-                msg = meta.msg || "<span class='icon-terminal'></span> &nbsp; Code your answer here, run it, and then make an attempt. <span style='float: right'>",
+                msg = meta.msg || "<span class='icon-terminal'></span> &nbsp; Code your answer here. <span style='float: right'>",
                 score = meta.score || 0,
                 max_score = meta.max_score || 0,
                 attempts = meta.attempts || 0,
-                max_attempts = meta.max_attempts
+                max_attempts = meta.max_attempts || 0
 
-            msg += "<span style='float: right' class='label label-info'> Score: <b>" + score + " / " + max_score + "</b>"
-            if (max_attempts != 0) {
-                msg += " &middot; Attempts: <b>" + attempts + " / " + max_attempts + "</b>"
+            msg += "<span style='float: right' class='label label-info'> Score: "
+            if (Homework.mode === "answering") {
+                msg += "<b>" + score + "</b> / <b>" + max_score + "</b>"
+            } else if (Homework.mode === "create") {
+                msg += "<b>" + max_score + "</b>"
+            }
+
+            msg += " &middot; Attempts: "
+            if (Homework.mode === "answering") {
+                msg += "<b>" + attempts + "</b>"
+                if (max_attempts != 0) {
+                    msg += " / <b>" + max_attempts + "</b>"
+                }
+            } else if (Homework.mode === "create") {
+                msg += "<b>" + max_attempts + "</b>"
             }
             msg += "</span>"
 
@@ -100,30 +111,124 @@
             mount_message(cell)
         }
 
-        window.Homework = {
-            config: {},
-            set_meta: set_meta,
-            mount_message: mount_message
-        }
-    }
-
-
-    function show_messages() {
-        var i = 0
-        var cell = IPython.notebook.get_cell(i)
-        while(cell !== null) {
-            if (cell.metadata && typeof(cell.metadata.question) !== "undefined") {
-                var q = cell.metadata.question
-                mount_message(cell)
+        function get_question_cells() {
+            var cell = IPython.notebook.get_cell(0),
+                i = 0,
+                cells = []
+            while(cell !== null) {
+                if (cell.metadata && typeof(cell.metadata.question) !== "undefined") {
+                    var q = cell.metadata.question
+                    cells.push(cell)
+                }
+                i+=1
+                cell = IPython.notebook.get_cell(i)
             }
-            cell = IPython.notebook.get_cell(i)
-            i+=1
+            return cells
         }
+
+        function hw_create(host, course, s, f) {
+            if(!s) {
+                s = function(result){
+                    if(result.code == 0) {
+                        bootbox.dialog({
+                            message: self._json_to_table(result.data),
+                            title: 'Create Course'
+                        }).find("div.modal-dialog").addClass("bootbox70");
+                    }
+                    else {
+                        bootbox.alert('<pre>' + result.data + '</pre>');
+                    }
+                };
+            };
+            if(!f) {
+                f = function() {
+                    bootbox.alert(
+                            "Oops. Unexpected error while creating course.<br/>" +
+                            "<br/>Please try again later.");
+                };
+            };
+            console.log({
+                'mode': 'create',
+                'params': JSON.stringify(course)
+            })
+            $.ajax({
+                url: host + '/hw/',
+                method: 'POST',
+                data: {
+                    'mode': 'create',
+                    'params': JSON.stringify(course)
+                }
+            }, s, f)
+        }
+
+        function create_problemset(config) {
+
+            var cells = get_question_cells()
+            config = config || Homework.config
+            if (!config.admins) {
+                alert("No administrators assigned for this set, add them in Homework.configure")
+                return
+            }
+
+            if (!config.host) { config.host == "" }
+            var questions = []
+            for (var i=0, l=cells.length; i < l; i++) {
+                questions.push({
+                    id:    cells[i].metadata.question,
+                    score: cells[i].metadata.max_score,
+                    ans:   cells[i].metadata.ans
+                })
+            }
+
+            var course = {
+                 admins: config.admins,
+                 id: config.course,
+                 problemsets: [{
+                     id: config.problemset,
+                     questions: questions
+                 }]
+            }
+
+            console.log(course)
+
+            try {
+                hw_create(config.host || "", course)
+            } catch (e) {
+                alert("An error occured. Problem set not saved!")
+            }
+       }
+
+       function clear_answers() {
+           var cells = get_question_cells()
+           for (var i=0, l=cells.length; i < l; i++) {
+               var cell = cells[i]
+               delete cell.metadata.ans
+               delete cell.metadata.msg
+               delete cell.metadata.alert
+               cell.clear_output()
+           }
+           Homework.mode = "answering"
+           Homework.refresh_messages()
+       }
+
+        function refresh_messages(q) {
+            _.map(q ? [get_question(q)] : get_question_cells(), mount_message)
+        }
+
+        var timer = setTimeout(refresh_messages, 500)
+
+        $([IPython.events]).on('notebook_loaded.Notebook', refresh_messages)
+        $([IPython.events]).on('create.Cell', refresh_messages)
+
+       window.Homework = {
+            config: {},
+            mode: "answering",
+            set_meta: set_meta,
+            mount_message: mount_message,
+            clear_answers: clear_answers,
+            refresh_messages: refresh_messages,
+            create_problemset: create_problemset
+       }
     }
-
-    var timer = setTimeout(show_messages, 500)
-
-    $([IPython.events]).on('notebook_loaded.Notebook', show_messages)
-    $([IPython.events]).on('create.Cell', show_messages) 
 
 })(jQuery)
