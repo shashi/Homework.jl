@@ -10,7 +10,7 @@ function new_question(config_json, metadata_json, cookie, answer)
     meta = Input{Any}(Dict())
     question = metadata["question"]
 
-    display(set_metadata(question, ["ans" => JSON.json(encode(metadata, answer))]))
+    display(set_metadata(question, ["answer" => JSON.json(encode(metadata, answer))]))
     display(set_metadata(question,
       alert("info", string("<span class='icon-info'></span> ",
         "Will commit last result as the answer to question ",

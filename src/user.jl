@@ -19,7 +19,7 @@ function attempt_prompt(config_json, metadata_json, cookie, answer)
         display(b)
 
         lift(b, init=nothing) do _
-            evaluate(config, metadata, "juliabox=\"eyJ4IjogImhWeVF3QmQrVTArdThDNWd5OEpMOXJGZWwwST0iLCAidSI6ICJzaGFzaGlnb3dkYTkxQGdtYWlsLmNvbSIsICJ0IjogIjIwMTUtMDItMTlUMDY6MTQ6MzEuOTMxMjMxKzAwOjAwIn0=\"; _gat=1; lb=\"6hUQrsszbytRidQfWaCcyWeF0Gk=\"; hostupload=49169; sign=\"TzDztM9gIegZDRfFGU2IFL+uqwg=\"; hostshell=49168; sessname=shashigowda91_d9b65e8bbc6112e216719c548128049356fc6dac; hostipnb=49170; AWSELB=252DE93F0AC7B67FDEC41379BA9D21C4D8C6C93B4ACE376D2E4B88C942911B1DF1842AEC938F45576C1260C4BF182436EA7A3F8D934F14B0D2BF30A592187D9303F32A55B57B6FB1C89CACA06A44C57E209A36C273; _ga=GA1.2.1582500828.1411792915", answer, metadata_channel)
+            evaluate(config, metadata, cookie, answer, metadata_channel)
         end
     end
     answer

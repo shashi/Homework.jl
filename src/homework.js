@@ -176,7 +176,7 @@
                 questions.push({
                     id:    cells[i].metadata.question,
                     score: cells[i].metadata.max_score,
-                    ans:   cells[i].metadata.ans
+                    ans:   cells[i].metadata.answer
                 })
             }
 
@@ -202,7 +202,7 @@
            var cells = get_question_cells()
            for (var i=0, l=cells.length; i < l; i++) {
                var cell = cells[i]
-               delete cell.metadata.ans
+               delete cell.metadata.answer
                delete cell.metadata.msg
                delete cell.metadata.alert
                cell.clear_output()
