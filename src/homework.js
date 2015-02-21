@@ -130,21 +130,25 @@
             if(!s) {
                 s = function(result){
                     if(result.code == 0) {
-                        bootbox.dialog({
-                            message: "The problem set was created. Now run <code>Homework.clear_answers()</code> to get the notebook ready for distribution.",
-                            title: 'Problemset created'
-                        }).find("div.modal-dialog").addClass("bootbox70");
+                        IPython.dialog.modal({
+                            title: 'Problemset created',
+                            body: "The problem set was created. Now run <code>Homework.clear_answers()</code> to get the notebook ready for distribution."
+                        })
                     }
                     else {
-                        bootbox.alert('<pre>' + result.data + '</pre>');
+                        IPython.dialog.modal({
+                            title: 'Problemset NOT created',
+                            body: "Non-zero result code. There was a problem saving the problem set!"
+                        })
                     }
                 };
             };
             if(!f) {
                 f = function() {
-                    bootbox.alert(
-                            "Oops. Unexpected error while creating course.<br/>" +
-                            "<br/>Please try again later.");
+                        IPython.dialog.modal({
+                            title: 'Failure',
+                            body: "Failed to create problem set. Are you sure you have permission to edit the course? Unexpected server error."
+                        })
                 };
             };
             console.log({
