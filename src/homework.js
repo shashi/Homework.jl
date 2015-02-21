@@ -213,6 +213,7 @@
                delete cell.metadata.answer
                delete cell.metadata.msg
                delete cell.metadata.alert
+               cell.clear_input()
                cell.clear_output()
            }
            Homework.mode = "answering"
