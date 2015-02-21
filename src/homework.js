@@ -174,8 +174,9 @@
             var questions = []
             for (var i=0, l=cells.length; i < l; i++) {
                 questions.push({
-                    id:    cells[i].metadata.question,
+                    id:    String(cells[i].metadata.question),
                     score: cells[i].metadata.max_score,
+                    attempts: cells[i].metadata.max_attempts,
                     ans:   cells[i].metadata.answer
                 })
             }
