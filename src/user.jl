@@ -61,7 +61,7 @@ function evaluate(config, metadata, cookie, answer, meta)
             if result["code"] != 0
                 push!(meta, alert("danger", "Something went wrong while verifying your code!"))
             else
-                report_evaluation(result, meta)
+                report_evaluation(result, metadata, meta)
             end
         else
             push!(meta, alert("danger",
@@ -73,13 +73,13 @@ function evaluate(config, metadata, cookie, answer, meta)
     answer
 end
 
-function report_evaluation(result, meta)
+function report_evaluation(result, metadata, meta_channel)
 
     data = result["data"]
     status = data["status"]
     score = data["score"]
     attempts = data["attempts"]
-    max_attempts = data["max_attempts"] == 0 ? get(meta, "max_attempts", 0) : data["max_attempts"]
+    max_attempts = data["max_attempts"] == 0 ? get(metadata, "max_attempts", 0) : data["max_attempts"]
     max_score = data["max_score"]
 
     if status == 1
@@ -99,6 +99,6 @@ function report_evaluation(result, meta)
             alert("warning", msg,))
     end
 
-    push!(meta, data)
+    push!(meta_channel, data)
 end
 
