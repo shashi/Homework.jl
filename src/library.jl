@@ -15,6 +15,7 @@ script(expr) =
 
 function configure(key)
     display(script(string("Homework.config = ", JSON.json(key))))
+    display(script("Homework.refresh_messages()"))
 end
 
 alert(level, text) =

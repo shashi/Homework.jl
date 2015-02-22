@@ -15,7 +15,7 @@ function attempt_prompt(config_json, metadata_json, cookie, answer)
     end |> display
 
     if !get(metadata, "finished", false)
-        b = button("Attempt »")
+        b = button("Submit »")
         display(b)
 
         lift(b, init=nothing) do _
