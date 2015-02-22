@@ -99,7 +99,7 @@
 
             $(cell.element).find(".hw-msg").remove()
             $(cell.element).find(".input_area").eq(0).append(msg)
-            if (cell.metadata.finished) { $(cell.element).find(".widget_subarea").hide() }
+            if (cell.metadata.finished) { $(cell.element).find(".widget-area").hide() }
         }
 
         function set_meta(question, extension) {
