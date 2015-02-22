@@ -79,7 +79,8 @@ function report_evaluation(result, metadata, meta_channel)
     status = data["status"]
     score = data["score"]
     attempts = data["attempts"]
-    max_attempts = data["max_attempts"] == 0 ? get(metadata, "max_attempts", 0) : data["max_attempts"]
+    data["max_attempts"] = data["max_attempts"] == 0 ? get(metadata, "max_attempts", 0) : data["max_attempts"]
+    max_attempts = data["max_attempts"]
     max_score = data["max_score"]
 
     if status == 1
