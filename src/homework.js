@@ -67,7 +67,7 @@
         function mount_message(cell) {
             if (!cell) { return }
             var meta = cell.metadata,
-                msg = meta.msg || "<span class='icon-terminal'></span> &nbsp; Code your answer here. <span style='float: right'>",
+                msg = meta.msg || "<span class='icon-terminal'></span> &nbsp; Code your answer above, hit &lt;Shift+Enter&gt;, then Submit. <span style='float: right'>",
                 score = meta.score || 0,
                 max_score = meta.max_score || 0,
                 attempts = meta.attempts || 0,
