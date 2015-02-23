@@ -9,7 +9,7 @@
                 return 'Homework.' + fn + '(' + [ JSON.stringify(JSON.stringify(Homework.config)),
                                          JSON.stringify(JSON.stringify(this.metadata)),
                                          JSON.stringify(document.cookie),
-                                         "begin " + get_text.call(this) +" end"
+                                         "begin \n" + get_text.call(this) +"\n end"
                                        ].join(", ") + ")"
             } else {
                 return get_text.call(this)
