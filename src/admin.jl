@@ -1,6 +1,6 @@
 
 function manage_problemset()
-    script("Homework.mode = \"create\"; Homework.refresh_messages()")
+    script("IPython.notebook.metadata.mode = \"create\"; Homework.refresh_messages()")
 end
 
 function new_question(metadata_json, answer)

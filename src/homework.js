@@ -213,7 +213,7 @@
            delete cell.metadata.msg
            delete cell.metadata.alert
        }
-       Homework.mode = "answering"
+       IPython.notebook.metadata.mode = "answering"
        Homework.refresh_messages()
    }
 
@@ -223,7 +223,7 @@
            cell.clear_input()
            cell.clear_output()
        }
-       Homework.mode = "answering"
+       IPython.notebook.metadata.mode = "answering"
        Homework.refresh_messages()
    }
 
