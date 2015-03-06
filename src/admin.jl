@@ -1,9 +1,9 @@
 
-function new_problemset()
+function manage_problemset()
     script("Homework.mode = \"create\"; Homework.refresh_messages()")
 end
 
-function new_question(config_json, metadata_json, cookie, answer)
+function new_question(metadata_json, answer)
 
     metadata = JSON.parse(metadata_json)
 
@@ -26,5 +26,15 @@ end
 
 function clear_answers()
     script("Homework.clear_answers(); Homework.refresh_messages()") |> display
-    display(Html("All the answers should be cleared now, delete this cell and the cell containing Homework.new_problemset, save the notebook and it will be good to distribute for answering."))
+    display(Html("All the answers should be cleared now, delete this cell and the cell containing Homework.manage_problemset, save the notebook and it will be good to distribute for answering."))
+end
+
+function get_report()
+    res = get(string(strip(global_config["host"], ['/']), "/hw/");
+                    blocking = true,
+                    query_params = [("mode", "report"),
+                    ("params", JSON.json([
+                        "course" => global_config["course"],
+                        "problemset" => global_config["problemset"]]))],
+                headers = [("Cookie", global_config["cookie"])])
 end

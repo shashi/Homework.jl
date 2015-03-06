@@ -2,9 +2,8 @@
 # Save answer in a closure for the submit button event,
 # make the button and display it. return the answer as is.
 #
-function attempt_prompt(config_json, metadata_json, cookie, answer)
+function attempt_prompt(metadata_json, answer)
 
-    config = JSON.parse(config_json)
     metadata = JSON.parse(metadata_json)
 
     metadata_channel = Input{Any}(Dict())
@@ -19,7 +18,7 @@ function attempt_prompt(config_json, metadata_json, cookie, answer)
         display(b)
 
         lift(b, init=nothing) do _
-            evaluate(config, metadata, cookie, answer, metadata_channel)
+            evaluate(metadata, answer, metadata_channel)
         end
     end
     answer
@@ -29,13 +28,11 @@ end
 # Evaluate an answer.
 #
 
-function evaluate(config, metadata, cookie, answer, meta)
-    @assert haskey(config, "course")
-    @assert haskey(config, "problemset")
+function evaluate(metadata, answer, meta)
     @assert haskey(metadata, "question")
 
-    if !haskey(config, "host")
-        config["host"] = "https://juliabox.org"
+    if !haskey(global_config, "host")
+        global_config["host"] = "https://juliabox.org"
     end
     question_no = string(metadata["question"])
 
@@ -44,16 +41,16 @@ function evaluate(config, metadata, cookie, answer, meta)
 
         # The HTTP requests to evaluate answer goes here...
         # After the request, you can push the
-        res = get(string(strip(config["host"], ['/']), "/hw/");
+        res = get(string(strip(global_config["host"], ['/']), "/hw/");
                 blocking = true,
                 query_params = [
                     ("mode", "submit"),
                     ("params", JSON.json([
-                        "course" => config["course"],
-                        "problemset" => config["problemset"],
+                        "course" => global_config["course"],
+                        "problemset" => global_config["problemset"],
                         "question" => question_no,
                         "answer" => JSON.json(encode(metadata, answer))]))],
-                headers = [("Cookie", cookie)])
+                headers = [("Cookie", global_config["cookie"])])
 
 
         if res.http_code == 200
