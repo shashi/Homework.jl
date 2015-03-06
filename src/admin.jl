@@ -25,6 +25,7 @@ function save_problemset()
 end
 
 function clear_admin_metadata()
+    global_config["mode"] = "answering"
     script("Homework.clear_admin_metadata(); Homework.refresh_messages()") |> display
     display(Html("You can try out the answer cells as if you were the student now. Next run Homework.clear_answers() to remove the answers."))
 end
