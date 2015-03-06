@@ -35,7 +35,7 @@ function clear_answers()
     display(Html("All the answers should be cleared now, delete this cell and the cell containing Homework.manage_problemset, save the notebook and it will be good to distribute for answering."))
 end
 
-function get_report()
+function show_report()
     mode = get(global_config, "mode",  "answering") == "create" ? "report" : "myreport"
     res = get(string(strip(get(global_config, "host", "https://juliabox.org"), ['/']), "/hw/");
                     blocking = true,
@@ -49,7 +49,9 @@ function get_report()
         if result["code"] != 0
             display("<div class='alert alert-danger'> Something went wrong while getting the report </div>")
         else
-            return make_score_dataframe(result["data"])
+            return @manipulate for report=["score", "attempts"]
+                make_score_dataframe(result["data"], report)
+            end
         end
     else
         display("<div class='alert alert-danger'> There was an error contacting the notebook server </div>")

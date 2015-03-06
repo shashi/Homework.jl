@@ -23,7 +23,7 @@ get_response_data(x) =
 set_metadata(question, obj) =
     script("Homework.set_meta(" * JSON.json(question) * ", " * JSON.json(obj) * ")")
 
-function make_score_dataframe(data; field="score")
+function make_score_dataframe(data, field="score")
     @assert field in ["score", "attempts"]
     d = Dict()
     meta = Dict()
