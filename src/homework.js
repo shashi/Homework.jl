@@ -205,13 +205,21 @@
         }
    }
 
-   function clear_answers() {
+   function clear_admin_metadata() {
        var cells = get_question_cells()
        for (var i=0, l=cells.length; i < l; i++) {
            var cell = cells[i]
            delete cell.metadata.answer
            delete cell.metadata.msg
            delete cell.metadata.alert
+       }
+       Homework.mode = "answering"
+       Homework.refresh_messages()
+   }
+
+   function clear_answers() {
+       var cells = get_question_cells()
+       for (var i=0, l=cells.length; i < l; i++) {
            cell.clear_input()
            cell.clear_output()
        }
@@ -237,6 +245,7 @@
         set_meta: set_meta,
         mount_message: mount_message,
         clear_answers: clear_answers,
+        clear_admin_metadata: clear_admin_metadata,
         get_question: get_question,
         get_question_cells: get_question_cells,
         refresh_messages: refresh_messages,
