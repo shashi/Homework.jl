@@ -41,8 +41,9 @@ function make_score_dataframe(data; field="score")
 
     students = sort(collect(keys(d)))
     df[:Names] = ["MAX", students]
-    for (q, score) in meta
+    for q in sort(collect(keys(meta)))
         df[symbol(q)] = [meta[q], [get(get(d, s, Dict()), q, 0) for s in students]]
     end
+    df[:total] = [sum([float(v) for (k, v) in row[2:end]]) for row in DataFrames.eachrow(df)]
     df
 end
