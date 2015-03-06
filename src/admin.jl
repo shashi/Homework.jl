@@ -36,11 +36,21 @@ function clear_answers()
 end
 
 function get_report()
-    res = get(string(strip(global_config["host"], ['/']), "/hw/");
+    res = get(string(strip(get(global_config, "host", "https://juliabox.org"), ['/']), "/hw/");
                     blocking = true,
                     query_params = [("mode", "report"),
                     ("params", JSON.json([
                         "course" => global_config["course"],
                         "problemset" => global_config["problemset"]]))],
                 headers = [("Cookie", global_config["cookie"])])
+    if res.http_code == 200
+        result = get_response_data(res)
+        if result["code"] != 0
+            display("<div class='alert alert-danger'> Something went wrong while getting the report </div>")
+        else
+            return make_score_dataframe(result["data"])
+        end
+    else
+        display("<div class='alert alert-danger'> There was an error contacting the notebook server </div>")
+    end
 end
