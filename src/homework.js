@@ -188,7 +188,7 @@
         }
 
         var course = {
-             admins: config.admins,
+             admins: config.admins || [],
              id: config.course,
              problemsets: [{
                  id: config.problemset,
@@ -237,6 +237,8 @@
         set_meta: set_meta,
         mount_message: mount_message,
         clear_answers: clear_answers,
+        get_question: get_question,
+        get_question_cells: get_question_cells,
         refresh_messages: refresh_messages,
         create_problemset: create_problemset
     }
