@@ -36,9 +36,10 @@ function clear_answers()
 end
 
 function get_report()
+    mode = get(global_config, "mode",  "answering") == "create" ? "report" : "myreport"
     res = get(string(strip(get(global_config, "host", "https://juliabox.org"), ['/']), "/hw/");
                     blocking = true,
-                    query_params = [("mode", "report"),
+                    query_params = [("mode", mode),
                     ("params", JSON.json([
                         "course" => global_config["course"],
                         "problemset" => global_config["problemset"]]))],
