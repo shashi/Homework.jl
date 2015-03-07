@@ -220,10 +220,11 @@
    function clear_answers() {
        var cells = get_question_cells()
        for (var i=0, l=cells.length; i < l; i++) {
+           var cell = cells[i]
            cell.clear_input()
            cell.clear_output()
        }
-       IPython.notebook.metadata.mode = "answering"
+       IPython.notebook.metadata.homework.mode = "answering"
        Homework.refresh_messages()
    }
 

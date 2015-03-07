@@ -35,8 +35,8 @@ function clear_answers()
     display(Html("All the answers should be cleared now, delete this cell and the cell containing Homework.manage_problemset, save the notebook and it will be good to distribute for answering."))
 end
 
-function show_report()
-    mode = get(global_config, "mode",  "answering") == "create" ? "report" : "myreport"
+function progress(all=(get(global_config, "mode",  "") == "create"))
+    mode = all ? "report" : "myreport"
     res = get(string(strip(get(global_config, "host", "https://juliabox.org"), ['/']), "/hw/");
                     blocking = true,
                     query_params = [("mode", mode),
@@ -58,3 +58,6 @@ function show_report()
         display("<div class='alert alert-danger'> There was an error contacting the notebook server </div>")
     end
 end
+
+show_report() = progress()
+

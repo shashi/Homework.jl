@@ -41,7 +41,11 @@ function make_score_dataframe(data, field="score")
 
     students = sort(collect(keys(d)))
     df[:Names] = ["MAX", students]
-    for q in sort(collect(keys(meta)))
+
+    num(x) = (try int(matchall(r"^[0-9]*", x)[1]) catch 0 end, x)
+    questions = sort(collect(keys(meta)), lt=(x, y) -> num(x) < num(y))
+
+    for q in questions
         df[symbol(q)] = [meta[q], [get(get(d, s, Dict()), q, 0) for s in students]]
     end
     if field == "score"
