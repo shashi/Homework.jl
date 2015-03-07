@@ -21,7 +21,7 @@ get_response_data(x) =
     x.body |> takebuf_string |> JSON.parse
 
 set_metadata(question, obj) =
-    script("Homework.set_meta(" * JSON.json(question) * ", " * JSON.json(obj) * ")")
+    script("window.Homework && Homework.set_meta(" * JSON.json(question) * ", " * JSON.json(obj) * ")")
 
 function make_score_dataframe(data, field="score")
     @assert field in ["score", "attempts"]
