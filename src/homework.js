@@ -210,9 +210,10 @@
            var cell = cells[i]
            delete cell.metadata.answer
            delete cell.metadata.msg
+           cell.metadata.finished && delete cell.metadata.finished
            delete cell.metadata.alert
        }
-       IPython.notebook.metadata.mode = "answering"
+       IPython.notebook.metadata.homework.mode = "answering"
        Homework.refresh_messages()
    }
 
