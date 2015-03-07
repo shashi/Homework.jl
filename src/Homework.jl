@@ -58,7 +58,6 @@ function reinit()
     # state["refresh_dashboard"] = (b = button("Refresh")) |> signal
     # display(b)
     # (state["dashboard"] = Input(Html("Loading more..."))) |> display
-
 end
 
 reinit()

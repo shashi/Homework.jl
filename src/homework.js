@@ -232,7 +232,15 @@
     }
 
     $([IPython.events]).on('notebook_loaded.Notebook', refresh_messages)
-    $([IPython.events]).on('create.Cell', refresh_messages)
+    $([IPython.events]).on('select.Cell', refresh_messages)
+
+    setTimeout(refresh_messages, 100)
+    setTimeout(refresh_messages, 200)
+    setTimeout(refresh_messages, 400)
+    setTimeout(refresh_messages, 500)
+    setTimeout(refresh_messages, 1000)
+    setTimeout(refresh_messages, 2000)
+    setTimeout(refresh_messages, 4000)
 
     window.Homework = {
         config: {},
