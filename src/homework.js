@@ -1,6 +1,5 @@
 (function ($) {
         // hijack IPython's methods of all CodeCells with the required metadata
-    IPython.notebook.kernel.comm_manager.register_target("HomeworkData", function (comm) {})
     if (!window.Homework) {
         var get_text = IPython.CodeCell.prototype.get_text
         IPython.CodeCell.prototype.get_text = function () {
@@ -241,6 +240,13 @@
     setTimeout(refresh_messages, 1000)
     setTimeout(refresh_messages, 2000)
     setTimeout(refresh_messages, 4000)
+
+    $([IPython.events]).on('status_started.Kernel', function (data) {
+        var k = data.kernel || IPython.notebook.kernel
+        k.comm_manager.register_target("HomeworkData", function (comm) {})
+    })
+    IPython.notebook && IPython.notebook.kernel &&
+        IPython.notebook.kernel.comm_manager.register_target("HomeworkData", function (comm) {})
 
     window.Homework = {
         config: {},
