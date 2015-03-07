@@ -47,7 +47,8 @@ function show_report()
     if res.http_code == 200
         result = get_response_data(res)
         if result["code"] != 0
-            display("<div class='alert alert-danger'> Something went wrong while getting the report </div>")
+            display(Html("<div class='alert alert-danger'> Something went wrong while getting the report </div>"))
+            dump(result)
         else
             return @manipulate for report=["score", "attempts"]
                 make_score_dataframe(result["data"], report)
