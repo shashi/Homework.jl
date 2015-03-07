@@ -50,7 +50,7 @@ function show_report()
             display(Html("<div class='alert alert-danger'> Something went wrong while getting the report </div>"))
             dump(result)
         else
-            return @manipulate for report=["score", "attempts"]
+            return @manipulate for report=["Score" => "score", "Incorrect attempts" => "attempts"]
                 make_score_dataframe(result["data"], report)
             end
         end

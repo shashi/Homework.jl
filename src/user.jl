@@ -86,8 +86,8 @@ function report_evaluation(result, metadata, meta_channel)
             alert("success", msg))
         data["finished"] = true
     else
-        if max_attempts != 0 && attempts >= max_attempts
-            msg = "<span class='icon-thumbs-down'></span> You <b>exceeded the maximum number of attempts</b> allowed for this question."
+        if max_attempts != 0 && attempts > max_attempts
+            msg = "<span class='icon-thumbs-down'></span> You <b>exceeded the maximum number of failed attempts</b> allowed for this question."
             data["finished"] = true
         else
             msg = "<span class='icon-eraser'></span> Wrong answer. <b>Try again.</b>"
