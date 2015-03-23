@@ -1,3 +1,6 @@
+using DataFrames
+
+include("coloredtable.jl")
 
 function manage_problemset()
     script("IPython.notebook.metadata.mode = \"create\"; Homework.refresh_messages()")
@@ -51,13 +54,10 @@ function progress(all=(get(global_config, "mode",  "") == "create"))
             dump(result)
         else
             return @manipulate for report=["Score" => "score", "Incorrect attempts" => "attempts"]
-                make_score_dataframe(result["data"], report)
+                color_progress(make_score_dataframe(result["data"], report))
             end
         end
     else
         display("<div class='alert alert-danger'> There was an error contacting the notebook server </div>")
     end
 end
-
-show_report() = progress()
-
