@@ -49,6 +49,8 @@ Base.writemime(io::IO, ::MIME"text/html", x::Colored) =
 
 
 color_incomplete(mx, x, flip=false) = (x < mx) $ flip ? Colored("#a35", x) : Colored("#374", x)
+
+tryfloat(x, d=0.0) = try float(x) catch d end
 function color_progress(d)
     df = DataFrame(Names = d[:Names])
     fst = true
@@ -58,7 +60,7 @@ function color_progress(d)
             continue           
         end
         mx = c[1]
-        df[n] = [Colored("black", mx), map(x -> color_incomplete(mx, x), c[2:end])]
+        df[n] = [Colored("black", mx), map(x -> color_incomplete(tryfloat(mx), tryfloat(x)), c[2:end])]
     end
     df
 end
