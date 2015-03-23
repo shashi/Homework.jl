@@ -54,7 +54,8 @@ function progress(all=(get(global_config, "mode",  "") == "create"))
             dump(result)
         else
             return @manipulate for report=["Score" => "score", "Incorrect attempts" => "attempts"]
-                color_progress(make_score_dataframe(result["data"], report))
+                make_score_dataframe(result["data"], report) |>
+                    x -> report == "score" ? color_progress(x) : x
             end
         end
     else
