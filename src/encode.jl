@@ -7,7 +7,7 @@ encode(metadata, x::Dict) =
 encode(metadata, x::Union(AbstractArray, Tuple)) =
     map(y -> encode(metadata, y), x)
 
-function encode(metadata, x::FloatingPoint)
+function encode(metadata, x::Real)
     precision = get(metadata, "precision", 3)
     round(x, precision)
 end
