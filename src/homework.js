@@ -159,7 +159,7 @@
             'params': JSON.stringify(course)
         })
         $.ajax({
-            url: host + '/hw/',
+            url: host + '/jboxplugin/hw/',
             method: 'POST',
             data: {
                 'mode': 'create',

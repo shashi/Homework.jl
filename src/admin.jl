@@ -40,7 +40,7 @@ end
 
 function progress(all=(get(global_config, "mode",  "") == "create"))
     mode = all ? "report" : "myreport"
-    res = get(string(strip(get(global_config, "host", "https://juliabox.org"), ['/']), "/hw/");
+    res = get(string(strip(get(global_config, "host", "https://juliabox.org"), ['/']), "/jboxplugin/hw/");
                     blocking = true,
                     query_params = [("mode", mode),
                     ("params", JSON.json([

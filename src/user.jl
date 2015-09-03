@@ -41,7 +41,7 @@ function evaluate(metadata, answer, meta)
 
         # The HTTP requests to evaluate answer goes here...
         # After the request, you can push the
-        res = get(string(strip(global_config["host"], ['/']), "/hw/");
+        res = get(string(strip(global_config["host"], ['/']), "/jboxplugin/hw/");
                 blocking = true,
                 query_params = [
                     ("mode", "submit"),
