@@ -41,14 +41,14 @@ end
 function progress(all=(get(global_config, "mode",  "") == "create"))
     mode = all ? "report" : "myreport"
     res = get(string(strip(get(global_config, "host", "https://juliabox.org"), ['/']), "/jboxplugin/hw/");
-                    blocking = true,
-                    query_params = [("mode", mode),
-                    ("params", JSON.json([
+                    query = ["mode" => mode,
+                    "params" => JSON.json([
                         "course" => global_config["course"],
-                        "problemset" => global_config["problemset"]]))],
-                headers = [("Cookie", global_config["cookie"])])
-    if res.http_code == 200
-        result = get_response_data(res)
+                        "problemset" => global_config["problemset"]])],
+                headers = ["Cookie" => global_config["cookie"]])
+
+    if statuscode(res) == 200
+        result = Requests.json(res)
         if result["code"] != 0
             display(Html("<div class='alert alert-danger'> Something went wrong while getting the report </div>"))
             dump(result)
@@ -59,6 +59,6 @@ function progress(all=(get(global_config, "mode",  "") == "create"))
             end
         end
     else
-        display("<div class='alert alert-danger'> There was an error contacting the notebook server </div>")
+        display(MIME"text/html"(), "<div class='alert alert-danger'> There was an error contacting the homework server </div>")
     end
 end

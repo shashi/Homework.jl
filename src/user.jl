@@ -17,7 +17,7 @@ function attempt_prompt(metadata_json, answer)
         b = button("Submit »")
         display(b)
 
-        lift(b, init=nothing) do _
+        lift(signal(b), init=nothing) do _
             evaluate(metadata, answer, metadata_channel)
         end
     end
@@ -36,36 +36,64 @@ function evaluate(metadata, answer, meta)
     end
     question_no = string(metadata["question"])
 
-    @async begin
-        push!(meta, alert("info", "Evaluating your answer..."))
+    @async push!(meta, alert("info", "Evaluating your answer..."))
 
-        # The HTTP requests to evaluate answer goes here...
-        # After the request, you can push the
-        res = get(string(strip(global_config["host"], ['/']), "/jboxplugin/hw/");
-                blocking = true,
-                query_params = [
-                    ("mode", "submit"),
-                    ("params", JSON.json([
-                        "course" => global_config["course"],
-                        "problemset" => global_config["problemset"],
-                        "question" => question_no,
-                        "answer" => JSON.json(encode(metadata, answer))]))],
-                headers = [("Cookie", global_config["cookie"])])
+    # The HTTP requests to evaluate answer goes here...
+    # After the request, you can push the
+    query_params = [
+        "mode" => "submit",
+        "params" => JSON.json([
+            "course" => global_config["course"],
+            "problemset" => global_config["problemset"],
+            "question" => question_no,
+            "answer" => JSON.json(encode(metadata, answer))
+        ])
+    ]
+    state = :success
 
+    response = nothing
+    try
+        response = get(string(strip(global_config["host"], ['/']), "/jboxplugin/hw/");
+            query = query_params,
+            headers = ["Cookie" => global_config["cookie"]])
 
-        if res.http_code == 200
-            result = get_response_data(res)
-            if result["code"] != 0
-                push!(meta, alert("danger", "Something went wrong while verifying your code!"))
-            else
-                report_evaluation(result, metadata, meta)
-            end
-        else
-            push!(meta, alert("danger",
-                "There was an unexpected error while accessing the homework server."))
+    catch err
+        open("homework_log.log", "a") do f
+            bt = catch_backtrace()
+            Base.show_backtrace(f, bt)
+            println(f, err)
         end
+        state = :failure
     end
 
+
+    try
+        if state == :success && response != nothing && statuscode(response) == 200
+            result = Requests.json(response)
+            if result["code"] != 0
+                open("homework_log.log", "a") do f
+                    println(f, "Code Non-zero")
+                end
+                @async push!(meta, alert("danger", "Something went wrong while verifying your code!"))
+            else
+                open("homework_log.log", "a") do f
+                    println(f, "Code 0")
+                end
+                @async report_evaluation(result, metadata, meta)
+            end
+        else
+            @async push!(meta, alert("danger",
+                "There was an unexpected error while accessing the homework server."))
+        end
+
+    catch err
+        open("homework_log.log", "a") do f
+            bt = catch_backtrace()
+            Base.show_backtrace(f, bt)
+            println(f, err)
+        end
+        state = :failed
+    end
     # return the answer itself for consistency
     answer
 end
@@ -81,7 +109,7 @@ function report_evaluation(result, metadata, meta_channel)
     max_score = data["max_score"]
 
     if status == 1
-        msg = "<span class='icon-thumbs-up'></span> Your last attempt was <b>correct!"
+        msg = "<span class='icon-thumbs-up'></span> Your last attempt was <b>correct!</b>"
         merge!(data,
             alert("success", msg))
         data["finished"] = true

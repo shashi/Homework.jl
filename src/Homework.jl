@@ -1,7 +1,12 @@
 module Homework
 
-using Interact, Reactive
-using JSON, HTTPClient
+using Reactive
+using Interact
+
+using JSON
+using Requests
+import Requests: get
+
 using Requires
 
 using IJulia.CommManager

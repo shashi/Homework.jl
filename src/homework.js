@@ -4,13 +4,13 @@
         var get_text = IPython.CodeCell.prototype.get_text
         IPython.CodeCell.prototype.get_text = function () {
             if (this.metadata && typeof(this.metadata.question) !== "undefined") {
-                // TODO: Include problem set number, user id
                 var fn = (Homework.mode() == "create") ? "new_question" : "attempt_prompt";
                 return 'Homework.' + fn + '(' + [
                                          JSON.stringify(JSON.stringify(this.metadata)),
                                          "begin \n" + get_text.call(this) +"\n end"
                                        ].join(", ") + ")"
             } else {
+                console.log("vs", get_text.call(this))
                 return get_text.call(this)
             }
         }
