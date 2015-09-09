@@ -74,7 +74,7 @@
             attempts = meta.attempts || 0,
             max_attempts = meta.max_attempts || 0
 
-        msg += "<span style='float: right' class='label label-info'> Score: "
+        msg += "<span style='position:absolute; top: 0.5em; right:0.5em' class='label label-info'> Score: "
         if (Homework.mode() === "answering") {
             msg += "<b>" + score + "</b> / <b>" + max_score + "</b>"
         } else if (Homework.mode() === "create") {
@@ -95,7 +95,7 @@
         var level = meta.alert || "info"
 
         msg = "<div class='hw-msg alert alert-" + level + "' id='hw-msg-" + meta.question +
-               "' style='padding: 0.5em; margin: 0; border-radius: 0'>" +
+               "' style='padding: 0.5em; margin: 0; position:relative; border-radius: 0'>" +
                msg + "</div>"
 
         $(cell.element).find(".hw-msg").remove()
@@ -182,7 +182,8 @@
                 id:    String(cells[i].metadata.question),
                 score: cells[i].metadata.max_score,
                 attempts: cells[i].metadata.max_attempts,
-                ans:   cells[i].metadata.answer
+                ans:   cells[i].metadata.answer,
+                explanation: cells[i].metadata.explanation || ""
             })
         }
 

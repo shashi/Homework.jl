@@ -104,14 +104,21 @@ function report_evaluation(result, metadata, meta_channel)
     status = data["status"]
     score = data["score"]
     attempts = data["attempts"]
+    explanation = get(data, "explanation", nothing)
     data["max_attempts"] = data["max_attempts"] == 0 ? get(metadata, "max_attempts", 0) : data["max_attempts"]
     max_attempts = data["max_attempts"]
     max_score = data["max_score"]
 
     if status == 1
         msg = "<span class='icon-thumbs-up'></span> Your last attempt was <b>correct!</b>"
+
+        if isa(explanation, String) && explanation != ""
+            msg = msg*"<p style='font-size:0.9em'><br><br><em>Explanation:</em> $explanation</p>"
+        end
+
         merge!(data,
             alert("success", msg))
+
         data["finished"] = true
     else
         if max_attempts != 0 && attempts > max_attempts
