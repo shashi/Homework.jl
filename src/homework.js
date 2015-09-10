@@ -81,7 +81,7 @@
             msg += "<b>" + max_score + "</b>"
         }
 
-        msg += " &middot; Failed attempts: "
+        msg += " &middot; Attempts: "
         if (Homework.mode() === "answering") {
             msg += "<b>" + attempts + "</b>"
             if (max_attempts != 0) {

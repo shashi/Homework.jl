@@ -49,7 +49,6 @@ function evaluate(metadata, answer, meta)
             "answer" => JSON.json(encode(metadata, answer))
         ])
     ]
-    state = :success
 
     response = nothing
     try
@@ -63,12 +62,11 @@ function evaluate(metadata, answer, meta)
             Base.show_backtrace(f, bt)
             println(f, err)
         end
-        state = :failure
     end
 
 
     try
-        if state == :success && response != nothing && statuscode(response) == 200
+        if response != nothing && statuscode(response) == 200
             result = Requests.json(response)
             if result["code"] != 0
                 open("homework_log.log", "a") do f
@@ -76,12 +74,12 @@ function evaluate(metadata, answer, meta)
                 end
                 @async push!(meta, alert("danger", "Something went wrong while verifying your code!"))
             else
-                open("homework_log.log", "a") do f
-                    println(f, "Code 0")
-                end
                 @async report_evaluation(result, metadata, meta)
             end
         else
+            open("homework_log.log", "a") do f
+                write(f, string(response))
+            end
             @async push!(meta, alert("danger",
                 "There was an unexpected error while accessing the homework server."))
         end
@@ -92,7 +90,8 @@ function evaluate(metadata, answer, meta)
             Base.show_backtrace(f, bt)
             println(f, err)
         end
-        state = :failed
+        @async push!(meta, alert("danger",
+            "Something went wrong in Homework.jl"))
     end
     # return the answer itself for consistency
     answer
@@ -113,7 +112,7 @@ function report_evaluation(result, metadata, meta_channel)
         msg = "<span class='icon-thumbs-up'></span> Your last attempt was <b>correct!</b>"
 
         if isa(explanation, String) && explanation != ""
-            msg = msg*"<p style='font-size:0.9em'><br><br><em>Explanation:</em> $explanation</p>"
+            msg = msg*"<p style='font-size:0.9em'><br><em>Explanation:</em> $explanation</p>"
         end
 
         merge!(data,
