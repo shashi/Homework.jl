@@ -1,3 +1,4 @@
 JSON
 Requires
-HTTPClient
+Requests
+Interact 0.2
