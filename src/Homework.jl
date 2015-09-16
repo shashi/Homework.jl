@@ -1,9 +1,6 @@
 module Homework
 
 using Reactive
-
-Pkg.installed("Interact") < v"0.2.0" && Pkg.update()
-
 using Interact
 
 using JSON
