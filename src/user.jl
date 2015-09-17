@@ -1,4 +1,10 @@
 #
+# This form maps JuliaBox ids to MIT email ids
+#
+function show_mit_form()
+    display(MIME("text/html"), """<iframe src="https://docs.google.com/forms/d/1uPqGeJChe0FFOsuUkdeLVbgPo9LzQEbRnS0xIzE-VGo/viewform?embedded=true" width="720" height="570" frameborder="0" marginheight="0" marginwidth="0">Loading...</iframe>""")
+end
+#
 # Save answer in a closure for the submit button event,
 # make the button and display it. return the answer as is.
 #
