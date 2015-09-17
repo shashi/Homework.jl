@@ -6,7 +6,7 @@ bestmime(io, x) =
 
 function Base.writemime(io::IO,
                         ::MIME"text/html",
-                        df::AbstractDataFrame)
+                        df::DataFrame)
     n = size(df, 1)
     cnames = _names(df)
     write(io, "<table class=\"data-frame\">")
