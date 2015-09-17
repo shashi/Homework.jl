@@ -49,9 +49,6 @@ function progress(all=(get(global_config, "mode",  "") == "create"))
 
     if statuscode(res) == 200
         result = Requests.json(res)
-        open("homework_log.log", "a") do f
-            write(f, string(result))
-        end
         if result["code"] != 0
             display(Html("<div class='alert alert-danger'> Something went wrong while getting the report </div>"))
             dump(result)

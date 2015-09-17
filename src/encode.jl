@@ -12,6 +12,10 @@ function encode(metadata, x::Real)
     round(x, precision)
 end
 
+function encode(metadata, x::SymTridiagonal)
+    "symtridiag(dv:" * JSON.string(x.dv) * ",ev:" *JSON.string(x.ev)
+end
+
 @require SymPy begin
     Homework.encode(metadata, x::SymPy.Sym) = "sym-" * string(x)
 end
