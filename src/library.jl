@@ -49,7 +49,7 @@ function make_score_dataframe(data, field="score")
         df[symbol(q)] = [meta[q], [get(get(d, s, Dict()), q, 0) for s in students]]
     end
     if field == "score"
-        total = DataFrame(total=[sum([float(v) for (k, v) in row[2:end]]) for row in DataFrames.eachrow(df)])
+        total = DataFrame(total=[sum([float(v) for (k, v) in row]) for row in DataFrames.eachrow(df)])
     end
     hcat(names, total, df)
 end
