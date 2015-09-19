@@ -40,7 +40,7 @@ function make_score_dataframe(data, field="score")
     df = DataFrame()
 
     students = sort(collect(keys(d)))
-    df[:Names] = ["MAX", students]
+    names = DataFrame(Names=["MAX", students])
 
     num(x) = (try int(matchall(r"^[0-9]*", x)[1]) catch 0 end, x)
     questions = sort(collect(keys(meta)), lt=(x, y) -> num(x) < num(y))
@@ -49,7 +49,7 @@ function make_score_dataframe(data, field="score")
         df[symbol(q)] = [meta[q], [get(get(d, s, Dict()), q, 0) for s in students]]
     end
     if field == "score"
-        df[:total] = [sum([float(v) for (k, v) in row[2:end]]) for row in DataFrames.eachrow(df)]
+        total = DataFrame(total=[sum([float(v) for (k, v) in row[2:end]]) for row in DataFrames.eachrow(df)])
     end
-    df
+    hcat(names, total, df)
 end
