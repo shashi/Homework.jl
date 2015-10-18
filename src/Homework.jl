@@ -2,10 +2,6 @@ module Homework
 
 using Reactive
 
-interact_ver = try Pkg.installed("Interact") catch v"0" end
-if interact_ver != nothing && interact_ver < v"0.2.0"
-    Pkg.checkout("Interact")
-end
 
 using Interact
 
