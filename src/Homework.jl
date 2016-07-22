@@ -21,9 +21,11 @@ include("library.jl")
 
 function reinit()
 
+    p = joinpath(splitdir(@__FILE__)[1], "homework.js")
+
     # Load javascript into IJulia
     display(MIME"text/html"(),
-        """<script>$(readall(Pkg.dir("Homework", "src", "homework.js")))</script>""")
+        """<script>$(readall(p))</script>""")
 
     # Push some metadata to the Julia side
     comm = Comm(:HomeworkData)
