@@ -40,7 +40,7 @@ end
 
 function progress(all=(get(global_config, "mode",  "") == "create"))
     mode = all ? "report" : "myreport"
-    res = get(string(strip(get(global_config, "host", "https://juliabox.org"), ['/']), "/jboxplugin/hw/");
+    res = get(string(strip(get(global_config, "host", "https://juliabox.com"), ['/']), "/jboxplugin/hw/");
                     query = Dict("mode" => mode,
                     "params" => JSON.json(Dict(
                         "course" => global_config["course"],
