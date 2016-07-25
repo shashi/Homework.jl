@@ -3,3 +3,4 @@ Interact
 DataFrames
 Requires
 Requests
+Compat 0.8.6
