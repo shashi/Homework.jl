@@ -1,3 +1,5 @@
+import Compat.String
+
 #
 # This form maps JuliaBox ids to MIT email ids
 #
@@ -12,10 +14,10 @@ function attempt_prompt(metadata_json, answer)
 
     metadata = JSON.parse(metadata_json)
 
-    metadata_channel = Input{Any}(Dict())
+    metadata_channel = Signal(Any, Dict())
 
     question = metadata["question"]
-    lift(metadata_channel, init=script("")) do x
+    map(metadata_channel, init=script("")) do x
         set_metadata(question, x)
     end |> display
 
@@ -23,7 +25,7 @@ function attempt_prompt(metadata_json, answer)
         b = button("Submit »")
         display(b)
 
-        lift(signal(b), init=nothing) do _
+        map(signal(b), init=nothing) do _
             evaluate(metadata, answer, metadata_channel)
         end
     end
@@ -46,21 +48,21 @@ function evaluate(metadata, answer, meta)
 
     # The HTTP requests to evaluate answer goes here...
     # After the request, you can push the
-    query_params = [
+    query_params = Dict(
         "mode" => "submit",
-        "params" => JSON.json([
+        "params" => JSON.json(Dict(
             "course" => global_config["course"],
             "problemset" => global_config["problemset"],
             "question" => question_no,
             "answer" => JSON.json(encode(metadata, answer))
-        ])
-    ]
+        ))
+    )
 
     response = nothing
     try
         response = get(string(strip(global_config["host"], ['/']), "/jboxplugin/hw/");
             query = query_params,
-            headers = ["Cookie" => global_config["cookie"]])
+            headers = Dict("Cookie" => global_config["cookie"]))
 
     catch err
         open("homework_log.log", "a") do f

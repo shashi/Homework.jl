@@ -4,7 +4,7 @@ encode(metadata, x) = x
 encode(metadata, x::Dict) =
     [(encode(metadata, k), encode(metadata, v)) for (k, v) in x] |> sort
 
-encode(metadata, x::Union(AbstractArray, Tuple)) =
+encode(metadata, x::Union{AbstractArray, Tuple}) =
     map(y -> encode(metadata, y), x)
 
 function encode(metadata, x::Real)

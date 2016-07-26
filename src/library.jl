@@ -1,4 +1,4 @@
-
+import Compat.String
 using DataFrames
 
 type Html
@@ -12,7 +12,7 @@ script(expr) =
     Html(string("<script>", expr, "</script>"))
 
 alert(level, text) =
-    ["alert" => level, "msg" => text]
+    Dict("alert" => level, "msg" => text)
 
 teeprint(x) =
     begin println(x); x end # A useful debugging function

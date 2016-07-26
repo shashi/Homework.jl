@@ -1,5 +1,6 @@
 using DataFrames
 import DataFrames: _names
+import Compat.String
 
 bestmime(io, x) =
     mimewritable(MIME"text/html"(), x) ? writemime(io, MIME"text/html"(), x) : write(io, string(x))

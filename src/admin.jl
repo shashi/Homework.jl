@@ -10,10 +10,10 @@ function new_question(metadata_json, answer)
 
     metadata = JSON.parse(metadata_json)
 
-    meta = Input{Any}(Dict())
+    meta = Signal(Any, Dict())
     question = metadata["question"]
 
-    display(set_metadata(question, ["answer" => JSON.json(encode(metadata, answer))]))
+    display(set_metadata(question, Dict("answer" => JSON.json(encode(metadata, answer)))))
     display(set_metadata(question,
       alert("info", string("<span class='icon-info'></span> ",
         "Will commit last result as the answer to question ",
@@ -41,11 +41,11 @@ end
 function progress(all=(get(global_config, "mode",  "") == "create"))
     mode = all ? "report" : "myreport"
     res = get(string(strip(get(global_config, "host", "https://juliabox.org"), ['/']), "/jboxplugin/hw/");
-                    query = ["mode" => mode,
-                    "params" => JSON.json([
+                    query = Dict("mode" => mode,
+                    "params" => JSON.json(Dict(
                         "course" => global_config["course"],
-                        "problemset" => global_config["problemset"]])],
-                headers = ["Cookie" => global_config["cookie"]])
+                        "problemset" => global_config["problemset"]))),
+                headers = Dict("Cookie" => global_config["cookie"]))
 
     if statuscode(res) == 200
         result = Requests.json(res)
@@ -53,7 +53,7 @@ function progress(all=(get(global_config, "mode",  "") == "create"))
             display(Html("<div class='alert alert-danger'> Something went wrong while getting the report </div>"))
             dump(result)
         else
-            return @manipulate for report=["Score" => "score", "Incorrect attempts" => "attempts"]
+            return @manipulate for report=Dict("Score" => "score", "Incorrect attempts" => "attempts")
                 make_score_dataframe(result["data"], report) |>
                     x -> report == "score" ? color_progress(x) : x
             end
