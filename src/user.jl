@@ -14,7 +14,7 @@ function attempt_prompt(metadata_json, answer)
 
     metadata = JSON.parse(metadata_json)
 
-    metadata_channel = Signal{Any}(Dict())
+    metadata_channel = Signal(Any, Dict())
 
     question = metadata["question"]
     map(metadata_channel, init=script("")) do x

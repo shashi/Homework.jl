@@ -10,7 +10,7 @@ function new_question(metadata_json, answer)
 
     metadata = JSON.parse(metadata_json)
 
-    meta = Signal{Any}(Dict())
+    meta = Signal(Any, Dict())
     question = metadata["question"]
 
     display(set_metadata(question, Dict("answer" => JSON.json(encode(metadata, answer)))))
