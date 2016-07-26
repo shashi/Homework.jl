@@ -14,10 +14,10 @@ function attempt_prompt(metadata_json, answer)
 
     metadata = JSON.parse(metadata_json)
 
-    metadata_channel = Input{Any}(Dict())
+    metadata_channel = Signal{Any}(Dict())
 
     question = metadata["question"]
-    lift(metadata_channel, init=script("")) do x
+    map(metadata_channel, init=script("")) do x
         set_metadata(question, x)
     end |> display
 
@@ -25,7 +25,7 @@ function attempt_prompt(metadata_json, answer)
         b = button("Submit »")
         display(b)
 
-        lift(signal(b), init=nothing) do _
+        map(signal(b), init=nothing) do _
             evaluate(metadata, answer, metadata_channel)
         end
     end
