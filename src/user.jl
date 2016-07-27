@@ -40,7 +40,7 @@ function evaluate(metadata, answer, meta)
     @assert haskey(metadata, "question")
 
     if !haskey(global_config, "host")
-        global_config["host"] = "https://juliabox.org"
+        global_config["host"] = "https://juliabox.com"
     end
     question_no = string(metadata["question"])
 
