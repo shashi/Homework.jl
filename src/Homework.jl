@@ -27,6 +27,7 @@ function reinit()
     display(MIME"text/html"(),
         """<script>$(readall(p))</script>""")
 
+
     # Push some metadata to the Julia side
     comm = Comm(:HomeworkData)
     display(script("IPython.notebook.kernel.comm_manager.comms[" * JSON.json(comm.id) * """].then(
@@ -69,7 +70,7 @@ function reinit()
     # (state["dashboard"] = Input(Html("Loading more..."))) |> display
 end
 
-reinit()
+__init__() = try reinit(); catch ex; end
 
 include("encode.jl")
 include("user.jl")
